@@ -1,7 +1,5 @@
-from services.finnhub_service import (
-    get_candles,
-    get_realtime_price
-)
+from services.twelvedata_service import get_candles
+from services.finnhub_service import get_realtime_price
 
 from strategy.scoring import calculate_score
 from utils.helpers import generate_signal
@@ -14,45 +12,40 @@ def run_analysis():
     try:
 
         # =========================
-        # AMBIL DATA CANDLE
+        # CANDLE ANALYSIS (TWELVE DATA)
         # =========================
         df = get_candles(SYMBOL)
 
-        # ❌ HANDLE KOSONG
         if df is None or df.empty:
-            print("No candle data - SKIP")
+            print("No TwelveData candles")
             return
 
-        # =========================
-        # HITUNG SIGNAL
-        # =========================
         score = calculate_score(df)
         signal = generate_signal(score)
 
         # =========================
-        # AMBIL HARGA REALTIME
+        # REALTIME PRICE (FINNHUB)
         # =========================
         price = get_realtime_price(SYMBOL)
 
-        # ❌ HANDLE REALTIME ERROR
         if price is None:
-            print("No realtime price - SKIP")
+            print("No Finnhub price")
             return
 
-        realtime_price = round(price, 2)
+        entry = round(price, 2)
 
         # =========================
-        # BUILD MESSAGE
+        # SIGNAL OUTPUT
         # =========================
         if signal == "BUY":
 
-            sl = round(realtime_price - 5, 2)
-            tp = round(realtime_price + 10, 2)
+            sl = round(entry - 5, 2)
+            tp = round(entry + 10, 2)
 
-            message = f"""
+            msg = f"""
 XAUUSD BUY
 
-Entry: {realtime_price}
+Entry: {entry}
 SL: {sl}
 TP: {tp}
 
@@ -61,13 +54,13 @@ Score: {score}
 
         elif signal == "SELL":
 
-            sl = round(realtime_price + 5, 2)
-            tp = round(realtime_price - 10, 2)
+            sl = round(entry + 5, 2)
+            tp = round(entry - 10, 2)
 
-            message = f"""
+            msg = f"""
 XAUUSD SELL
 
-Entry: {realtime_price}
+Entry: {entry}
 SL: {sl}
 TP: {tp}
 
@@ -76,18 +69,17 @@ Score: {score}
 
         else:
 
-            message = f"""
+            msg = f"""
 XAUUSD HOLD
 
-No valid setup
+No setup
 
-Price: {realtime_price}
+Price: {entry}
 Score: {score}
 """
 
-        print(message)
-
-        send_telegram(message)
+        print(msg)
+        send_telegram(msg)
 
     except Exception as e:
-        print("JOB ERROR:", e)
+        print("ERROR:", e)
