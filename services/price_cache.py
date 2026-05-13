@@ -11,7 +11,7 @@ def update_price():
 
     global last_price, last_update
 
-    price = get_realtime_price("OANDA:XAU_USD")
+    price = get_realtime_price()
 
     if price is not None:
         last_price = price
@@ -22,7 +22,6 @@ def get_cached_price():
 
     global last_price, last_update
 
-    # kalau belum ada atau expired
     if last_price is None or (time.time() - last_update) > CACHE_SECONDS:
         update_price()
 
