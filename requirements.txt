@@ -1,9 +1,7 @@
-MetaTrader5
+requests
 pandas
 numpy
 python-dotenv
 aiogram
 APScheduler
 pytz
-fastapi
-uvicorn
