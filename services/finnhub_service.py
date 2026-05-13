@@ -1,13 +1,14 @@
 import requests
 import pandas as pd
 import time
-
 from config import FINNHUB_API_KEY
 
 BASE_URL = "https://finnhub.io/api/v1"
 
 
-# realtime price
+# =========================
+# REALTIME PRICE
+# =========================
 def get_realtime_price(symbol="OANDA:XAU_USD"):
 
     url = (
@@ -19,42 +20,64 @@ def get_realtime_price(symbol="OANDA:XAU_USD"):
     response = requests.get(url)
     data = response.json()
 
-    return data['c']
+    # safety check
+    if "c" not in data:
+        print("Realtime error:", data)
+        return None
+
+    return data["c"]
 
 
-# ambil 12 candle M5
-def get_candles(
-    symbol="OANDA:XAU_USD",
-    resolution="5",
-    count=12
-):
+# =========================
+# 12 CANDLE M5 HISTORY
+# =========================
+def get_candles(symbol="OANDA:XAU_USD", resolution="5", count=12):
 
-    now = int(time.time())
+    try:
+        now = int(time.time())
 
-    # 12 candle x 5 menit
-    from_time = now - (count * 5 * 60)
+        # ambil lebih lebar biar tidak kosong
+        from_time = now - (60 * 60 * 2)  # 2 jam data
 
-    url = (
-        f"{BASE_URL}/stock/candle"
-        f"?symbol={symbol}"
-        f"&resolution={resolution}"
-        f"&from={from_time}"
-        f"&to={now}"
-        f"&token={FINNHUB_API_KEY}"
-    )
+        url = (
+            f"{BASE_URL}/stock/candle"
+            f"?symbol={symbol}"
+            f"&resolution={resolution}"
+            f"&from={from_time}"
+            f"&to={now}"
+            f"&token={FINNHUB_API_KEY}"
+        )
 
-    response = requests.get(url)
-    data = response.json()
+        response = requests.get(url)
+        data = response.json()
 
-    df = pd.DataFrame({
-        'time': data['t'],
-        'open': data['o'],
-        'high': data['h'],
-        'low': data['l'],
-        'close': data['c'],
-        'volume': data['v']
-    })
+        # =========================
+        # VALIDASI RESPONSE
+        # =========================
+        if data.get("s") != "ok":
+            print("Finnhub error:", data)
+            return None
 
-    df['time'] = pd.to_datetime(df['time'], unit='s')
+        if "t" not in data or len(data["t"]) == 0:
+            print("Empty candle data:", data)
+            return None
 
-    return df
+        df = pd.DataFrame({
+            "time": data["t"],
+            "open": data["o"],
+            "high": data["h"],
+            "low": data["l"],
+            "close": data["c"],
+            "volume": data["v"]
+        })
+
+        df["time"] = pd.to_datetime(df["time"], unit="s")
+
+        # ambil 12 candle terakhir
+        df = df.tail(count)
+
+        return df
+
+    except Exception as e:
+        print("Candle fetch error:", e)
+        return None
