@@ -11,30 +11,22 @@ def calculate_score(df):
     atr = calculate_atr(df)
     breakout = breakout_signal(df)
 
-    # momentum bullish
-    if momentum['bull_power'] > momentum['bear_power']:
+    # momentum
+    if momentum["bull_power"] > momentum["bear_power"]:
         score += 2
-
-    # momentum bearish
-    if momentum['bear_power'] > momentum['bull_power']:
+    else:
         score -= 2
 
-    # dominasi bullish
-    if momentum['bullish_count'] >= 8:
+    # candle dominance
+    if momentum["bullish_count"] >= 8:
         score += 2
 
-    # dominasi bearish
-    if momentum['bearish_count'] >= 8:
+    if momentum["bearish_count"] >= 8:
         score -= 2
 
-    # volatility
+    # volatility filter
     if atr > 2:
-
-        if score > 0:
-            score += 2
-
-        else:
-            score -= 2
+        score += 2 if score > 0 else -2
 
     # breakout
     if breakout == "BUY":
