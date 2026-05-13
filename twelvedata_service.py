@@ -4,10 +4,10 @@ from config import TWELVEDATA_API_KEY
 BASE_URL = "https://api.twelvedata.com"
 
 
-def get_candles(symbol="XAU/USD", interval="5min", limit=12):
+def get_m5_candles(symbol="XAU/USD", interval="5min", limit=12):
 
     if not TWELVEDATA_API_KEY:
-        print("TwelveData error: API key missing")
+        print("TwelveData error: missing API key")
         return []
 
     try:
@@ -26,22 +26,22 @@ def get_candles(symbol="XAU/USD", interval="5min", limit=12):
             print("TwelveData error:", data)
             return []
 
-        values = data["values"][:limit]
-        values = list(reversed(values))
+        values = list(reversed(data["values"][:limit]))
 
-        # convert to float safely
-        candles = []
-
-        for v in values:
-            candles.append({
+        return [
+            {
                 "open": float(v["open"]),
                 "high": float(v["high"]),
                 "low": float(v["low"]),
                 "close": float(v["close"]),
-            })
-
-        return candles
+            }
+            for v in values
+        ]
 
     except Exception as e:
         print("TwelveData error:", e)
         return []
+
+
+# ================= COMPATIBILITY LAYER =================
+get_candles = get_m5_candles
