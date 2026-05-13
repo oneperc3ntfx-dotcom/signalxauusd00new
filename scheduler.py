@@ -32,7 +32,18 @@ async def hourly_scheduler(app):
 
         price = get_last_price()
 
-        if signal:
+        if signal and price:
+
+            entry = price
+
+            # ================= TP SL =================
+            if signal == "BUY":
+                tp = entry + 7
+                sl = entry - 5
+
+            elif signal == "SELL":
+                tp = entry - 7
+                sl = entry + 5
 
             msg = f"""
 📊 XAUUSD SIGNAL (HOURLY)
@@ -40,7 +51,12 @@ async def hourly_scheduler(app):
 📈 {signal}
 📊 Trend: {meta['trend']}
 📉 Volatility: {meta['volatility']:.2f}
-💰 Price: {price}
+
+💰 Entry: {entry:.2f}
+🎯 TP: {tp:.2f} (+7)
+⛔ SL: {sl:.2f} (-5)
+
+⏰ Timeframe: M5 (12 candles)
 """
 
             await app.bot.send_message(chat_id=CHAT_ID, text=msg)
@@ -59,7 +75,18 @@ async def pro_max_scheduler(app):
 
         price = get_last_price()
 
-        if signal:
+        if signal and price:
+
+            entry = price
+
+            # ================= TP SL =================
+            if signal == "BUY":
+                tp = entry + 7
+                sl = entry - 5
+
+            elif signal == "SELL":
+                tp = entry - 7
+                sl = entry + 5
 
             msg = f"""
 🔥 PRO MAX SIGNAL
@@ -67,7 +94,12 @@ async def pro_max_scheduler(app):
 📈 {signal}
 📊 Trend: {meta['trend']}
 📉 Volatility: {meta['volatility']:.2f}
-💰 Price: {price}
+
+💰 Entry: {entry:.2f}
+🎯 TP: {tp:.2f} (+7)
+⛔ SL: {sl:.2f} (-5)
+
+⚡ TF: M5 LIVE
 """
 
             await app.bot.send_message(chat_id=CHAT_ID, text=msg)
