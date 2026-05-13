@@ -6,7 +6,6 @@ from services.finnhub_service import (
 from strategy.scoring import calculate_score
 from utils.helpers import generate_signal
 from services.telegram_service import send_telegram
-
 from config import SYMBOL
 
 
@@ -14,22 +13,37 @@ def run_analysis():
 
     try:
 
-        # ambil 12 candle history
+        # =========================
+        # AMBIL DATA CANDLE
+        # =========================
         df = get_candles(SYMBOL)
 
-        # hitung strategy score
-        score = calculate_score(df)
+        # ❌ HANDLE KOSONG
+        if df is None or df.empty:
+            print("No candle data - SKIP")
+            return
 
-        # generate BUY SELL HOLD
+        # =========================
+        # HITUNG SIGNAL
+        # =========================
+        score = calculate_score(df)
         signal = generate_signal(score)
 
-        # realtime entry price
-        realtime_price = round(
-            get_realtime_price(SYMBOL),
-            2
-        )
+        # =========================
+        # AMBIL HARGA REALTIME
+        # =========================
+        price = get_realtime_price(SYMBOL)
 
-        # BUY
+        # ❌ HANDLE REALTIME ERROR
+        if price is None:
+            print("No realtime price - SKIP")
+            return
+
+        realtime_price = round(price, 2)
+
+        # =========================
+        # BUILD MESSAGE
+        # =========================
         if signal == "BUY":
 
             sl = round(realtime_price - 5, 2)
@@ -38,23 +52,13 @@ def run_analysis():
             message = f"""
 XAUUSD BUY
 
-Realtime Entry:
-{realtime_price}
+Entry: {realtime_price}
+SL: {sl}
+TP: {tp}
 
-SL:
-{sl}
-
-TP:
-{tp}
-
-Score:
-{score}
-
-Engine:
-Momentum + Volatility
+Score: {score}
 """
 
-        # SELL
         elif signal == "SELL":
 
             sl = round(realtime_price + 5, 2)
@@ -63,23 +67,13 @@ Momentum + Volatility
             message = f"""
 XAUUSD SELL
 
-Realtime Entry:
-{realtime_price}
+Entry: {realtime_price}
+SL: {sl}
+TP: {tp}
 
-SL:
-{sl}
-
-TP:
-{tp}
-
-Score:
-{score}
-
-Engine:
-Momentum + Volatility
+Score: {score}
 """
 
-        # HOLD
         else:
 
             message = f"""
@@ -87,18 +81,13 @@ XAUUSD HOLD
 
 No valid setup
 
-Realtime Price:
-{realtime_price}
-
-Score:
-{score}
+Price: {realtime_price}
+Score: {score}
 """
 
         print(message)
 
-        # kirim telegram
         send_telegram(message)
 
     except Exception as e:
-
-        print(f"ERROR: {e}")
+        print("JOB ERROR:", e)
