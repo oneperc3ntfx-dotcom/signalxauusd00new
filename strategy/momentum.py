@@ -1,4 +1,5 @@
 def calculate_momentum(df):
+
     bull_power = 0
     bear_power = 0
 
@@ -6,12 +7,18 @@ def calculate_momentum(df):
     bearish_count = 0
 
     for _, candle in df.iterrows():
+
         body = candle['close'] - candle['open']
 
+        # bullish
         if body > 0:
+
             bull_power += abs(body)
             bullish_count += 1
+
+        # bearish
         else:
+
             bear_power += abs(body)
             bearish_count += 1
 
