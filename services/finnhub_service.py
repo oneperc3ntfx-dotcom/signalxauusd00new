@@ -5,16 +5,12 @@ BASE_URL = "https://finnhub.io/api/v1"
 
 
 # =========================
-# REALTIME PRICE
+# REALTIME PRICE ONLY
 # =========================
 def get_realtime_price(symbol="OANDA:XAU_USD"):
 
     try:
-        url = (
-            f"{BASE_URL}/quote"
-            f"?symbol={symbol}"
-            f"&token={FINNHUB_API_KEY}"
-        )
+        url = f"{BASE_URL}/quote?symbol={symbol}&token={FINNHUB_API_KEY}"
 
         res = requests.get(url, timeout=10)
         data = res.json()
@@ -22,7 +18,7 @@ def get_realtime_price(symbol="OANDA:XAU_USD"):
         price = data.get("c", None)
 
         if price is None or price == 0:
-            print("Finnhub invalid price:", data)
+            print("Finnhub invalid response:", data)
             return None
 
         return float(price)
