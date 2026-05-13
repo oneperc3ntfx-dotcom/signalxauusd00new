@@ -1,45 +1,70 @@
 import asyncio
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import logging
 
-from scheduler.jobs import run_analysis
-from services.telegram_service import bot, dp
-from services.price_cache import update_price
+from telegram import Update
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes
+)
 
-from pytz import utc
+from config import BOT_TOKEN, CHAT_ID
+from data_feed import last_price, stream_price
 
-scheduler = AsyncIOScheduler(timezone=utc)
-
-
-# =========================
-# SIGNAL TIAP JAM 00
-# =========================
-scheduler.add_job(run_analysis, "cron", minute=0)
+logging.basicConfig(level=logging.INFO)
 
 
-# =========================
-# PRICE LOOP (CACHE UPDATE)
-# =========================
-async def price_loop():
+# ================= PRICE COMMAND =================
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    while True:
-        try:
-            update_price()
-        except Exception as e:
-            print("Price loop error:", e)
+    if not last_price:
+        return await update.message.reply_text("⚠️ No realtime price")
 
-        await asyncio.sleep(5)
+    await update.message.reply_text(f"📈 XAUUSD : {last_price}")
 
 
-async def main():
+# ================= SIMPLE SIGNAL =================
+def smc_signal(price):
+
+    if int(price) % 2 == 0:
+        return "BUY"
+    return "SELL"
+
+
+async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    if not last_price:
+        return await update.message.reply_text("⚠️ No price")
+
+    bias = smc_signal(last_price)
+
+    await update.message.reply_text(
+        f"📊 SIGNAL: {bias}\n📈 PRICE: {last_price}"
+    )
+
+
+# ================= BACKGROUND TASK =================
+async def post_init(app):
+
+    lock = asyncio.Lock()
+
+    asyncio.create_task(stream_price(lock))
 
     print("BOT RUNNING...")
 
-    scheduler.start()
 
-    asyncio.create_task(price_loop())
+# ================= MAIN =================
+def main():
 
-    await dp.start_polling(bot)
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("price", price))
+    app.add_handler(CommandHandler("signal", signal))
+
+    app.post_init = post_init
+
+    app.run_polling()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
