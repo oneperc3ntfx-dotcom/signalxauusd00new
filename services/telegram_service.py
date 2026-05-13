@@ -2,9 +2,12 @@ from aiogram import Bot, Dispatcher, types
 import asyncio
 
 from config import BOT_TOKEN, CHAT_ID
-from services.finnhub_service import get_realtime_price
+from services.price_cache import get_cached_price
 
-bot = Bot(token=BOT_TOKEN)
+if not BOT_TOKEN:
+    raise Exception("BOT_TOKEN belum di-set di Railway")
+
+bot = Bot(token=str(BOT_TOKEN))
 dp = Dispatcher()
 
 
@@ -14,7 +17,7 @@ dp = Dispatcher()
 @dp.message(lambda message: message.text == "/harga")
 async def harga_handler(message: types.Message):
 
-    price = get_realtime_price()
+    price = get_cached_price()
 
     if price is None:
         await message.reply("⚠️ No realtime price")
@@ -27,6 +30,9 @@ async def harga_handler(message: types.Message):
 # SEND MESSAGE
 # =========================
 async def send_message(text):
+    if not CHAT_ID:
+        return
+
     await bot.send_message(CHAT_ID, text)
 
 
