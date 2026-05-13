@@ -1,4 +1,5 @@
 def calculate_atr(df):
+
     highs = df['high']
     lows = df['low']
 
