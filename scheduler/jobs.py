@@ -12,14 +12,17 @@ def run_analysis():
     try:
 
         # =========================
-        # CANDLE ANALYSIS (TWELVE DATA)
+        # CANDLE DATA (TWELVE DATA)
         # =========================
         df = get_candles(SYMBOL)
 
         if df is None or df.empty:
-            print("No TwelveData candles")
+            print("No candle data")
             return
 
+        # =========================
+        # STRATEGY
+        # =========================
         score = calculate_score(df)
         signal = generate_signal(score)
 
@@ -29,7 +32,7 @@ def run_analysis():
         price = get_realtime_price(SYMBOL)
 
         if price is None:
-            print("No Finnhub price")
+            print("No realtime price")
             return
 
         entry = round(price, 2)
@@ -72,8 +75,6 @@ Score: {score}
             msg = f"""
 XAUUSD HOLD
 
-No setup
-
 Price: {entry}
 Score: {score}
 """
@@ -82,4 +83,4 @@ Score: {score}
         send_telegram(msg)
 
     except Exception as e:
-        print("ERROR:", e)
+        print("JOB ERROR:", e)
