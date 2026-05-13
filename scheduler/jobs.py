@@ -12,7 +12,7 @@ def run_analysis():
     try:
 
         # =========================
-        # CANDLE DATA (TWELVE DATA)
+        # CANDLE (TWELVE DATA)
         # =========================
         df = get_candles(SYMBOL)
 
@@ -21,7 +21,7 @@ def run_analysis():
             return
 
         # =========================
-        # STRATEGY
+        # ANALISA
         # =========================
         score = calculate_score(df)
         signal = generate_signal(score)
@@ -32,41 +32,29 @@ def run_analysis():
         price = get_realtime_price(SYMBOL)
 
         if price is None:
-            print("No realtime price")
+            print("No price from Finnhub")
             return
 
         entry = round(price, 2)
 
         # =========================
-        # SIGNAL OUTPUT
+        # OUTPUT SIGNAL
         # =========================
         if signal == "BUY":
-
-            sl = round(entry - 5, 2)
-            tp = round(entry + 10, 2)
 
             msg = f"""
 XAUUSD BUY
 
 Entry: {entry}
-SL: {sl}
-TP: {tp}
-
 Score: {score}
 """
 
         elif signal == "SELL":
 
-            sl = round(entry + 5, 2)
-            tp = round(entry - 10, 2)
-
             msg = f"""
 XAUUSD SELL
 
 Entry: {entry}
-SL: {sl}
-TP: {tp}
-
 Score: {score}
 """
 
