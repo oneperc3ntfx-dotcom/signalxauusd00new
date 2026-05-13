@@ -6,7 +6,7 @@ BASE_URL = "https://api.twelvedata.com"
 
 
 # =========================
-# CANDLE HISTORY (M5)
+# CANDLE HISTORY ONLY
 # =========================
 def get_candles(symbol="XAU/USD", interval="5min", limit=12):
 
@@ -23,17 +23,15 @@ def get_candles(symbol="XAU/USD", interval="5min", limit=12):
         data = res.json()
 
         if "values" not in data:
-            print("TwelveData candle error:", data)
+            print("TwelveData error:", data)
             return None
 
         df = pd.DataFrame(data["values"])
 
-        # safety convert
         df = df[["open", "high", "low", "close"]].astype(float)
 
-        # ambil 12 candle terakhir
         df = df.head(limit)
-        df = df.iloc[::-1]  # urut lama -> baru
+        df = df.iloc[::-1]
 
         return df
 
