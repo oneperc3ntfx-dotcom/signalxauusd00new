@@ -1,19 +1,13 @@
 import asyncio
-
 from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    ContextTypes
-)
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 from config import BOT_TOKEN
 from data_feed import stream_price, get_last_price
+from scheduler import hourly_scheduler, pro_max_scheduler
 
 
-# =========================
-# /PRICE COMMAND
-# =========================
+# ================= COMMAND PRICE =================
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     price = get_last_price()
@@ -25,44 +19,32 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"📈 XAUUSD : {price}")
 
 
-# =========================
-# SIMPLE SIGNAL TEST
-# =========================
-async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ================= COMMAND START =================
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    price = get_last_price()
-
-    if price is None:
-        return await update.message.reply_text("⚠️ No price")
-
-    bias = "BUY" if int(price) % 2 == 0 else "SELL"
-
-    await update.message.reply_text(
-        f"📊 SIGNAL: {bias}\n📈 PRICE: {price}"
-    )
+    await update.message.reply_text("🤖 XAUUSD BOT ACTIVE")
 
 
-# =========================
-# BACKGROUND STREAM START
-# =========================
+# ================= INIT =================
 async def post_init(app):
 
     lock = asyncio.Lock()
 
     asyncio.create_task(stream_price(lock))
 
+    asyncio.create_task(hourly_scheduler(app))
+    # asyncio.create_task(pro_max_scheduler(app))  # optional mode
+
     print("BOT RUNNING...")
 
 
-# =========================
-# MAIN
-# =========================
+# ================= MAIN =================
 def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+    app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("price", price))
-    app.add_handler(CommandHandler("signal", signal))
 
     app.post_init = post_init
 
