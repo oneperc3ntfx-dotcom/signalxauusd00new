@@ -1,13 +1,10 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
 from scheduler.jobs import run_analysis
-from services.mt5_service import initialize_mt5
 from pytz import utc
-
-initialize_mt5()
 
 scheduler = BlockingScheduler(timezone=utc)
 
-# Jalan setiap jam menit 00
+# jalan setiap jam menit 00
 scheduler.add_job(
     run_analysis,
     'cron',
@@ -16,6 +13,7 @@ scheduler.add_job(
 
 print("XAUUSD BOT RUNNING...")
 
+# test pertama
 run_analysis()
 
 scheduler.start()
