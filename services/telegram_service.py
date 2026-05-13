@@ -1,10 +1,10 @@
 from aiogram import Bot, Dispatcher, types
 import asyncio
 
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-from services.price_cache import get_cached_price
+from config import BOT_TOKEN, CHAT_ID
+from services.finnhub_service import get_realtime_price
 
-bot = Bot(token=TELEGRAM_BOT_TOKEN)
+bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 
@@ -14,20 +14,20 @@ dp = Dispatcher()
 @dp.message(lambda message: message.text == "/harga")
 async def harga_handler(message: types.Message):
 
-    price = get_cached_price()
+    price = get_realtime_price()
 
     if price is None:
         await message.reply("⚠️ No realtime price")
         return
 
-    await message.reply(f"📈 XAUUSD : {price}")
+    await message.reply(f"📊 XAUUSD : {price}")
 
 
 # =========================
 # SEND MESSAGE
 # =========================
 async def send_message(text):
-    await bot.send_message(TELEGRAM_CHAT_ID, text)
+    await bot.send_message(CHAT_ID, text)
 
 
 def send_telegram(text):
