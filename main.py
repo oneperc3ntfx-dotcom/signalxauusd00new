@@ -6,26 +6,20 @@ from services.telegram_service import bot, dp
 
 from pytz import utc
 
-
 scheduler = AsyncIOScheduler(timezone=utc)
 
 
 # tiap jam menit 00
-scheduler.add_job(
-    run_analysis,
-    "cron",
-    minute=0
-)
+scheduler.add_job(run_analysis, "cron", minute=0)
 
 
 async def main():
 
-    print("XAUUSD BOT RUNNING...")
+    print("BOT RUNNING...")
 
-    # start scheduler
     scheduler.start()
 
-    # start telegram polling (UNTUK /harga)
+    # INI YANG ENABLE /harga
     await dp.start_polling(bot)
 
 
