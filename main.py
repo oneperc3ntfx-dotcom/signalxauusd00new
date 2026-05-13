@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from telegram import Update
 from telegram.ext import (
@@ -8,42 +7,44 @@ from telegram.ext import (
     ContextTypes
 )
 
-from config import BOT_TOKEN, CHAT_ID
-from data_feed import last_price, stream_price
-
-logging.basicConfig(level=logging.INFO)
+from config import BOT_TOKEN
+from data_feed import stream_price, get_last_price
 
 
-# ================= PRICE COMMAND =================
+# =========================
+# /PRICE COMMAND
+# =========================
 async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    if not last_price:
-        return await update.message.reply_text("⚠️ No realtime price")
+    price = get_last_price()
 
-    await update.message.reply_text(f"📈 XAUUSD : {last_price}")
+    if price is None:
+        await update.message.reply_text("⚠️ No realtime price")
+        return
 
-
-# ================= SIMPLE SIGNAL =================
-def smc_signal(price):
-
-    if int(price) % 2 == 0:
-        return "BUY"
-    return "SELL"
+    await update.message.reply_text(f"📈 XAUUSD : {price}")
 
 
+# =========================
+# SIMPLE SIGNAL TEST
+# =========================
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    if not last_price:
+    price = get_last_price()
+
+    if price is None:
         return await update.message.reply_text("⚠️ No price")
 
-    bias = smc_signal(last_price)
+    bias = "BUY" if int(price) % 2 == 0 else "SELL"
 
     await update.message.reply_text(
-        f"📊 SIGNAL: {bias}\n📈 PRICE: {last_price}"
+        f"📊 SIGNAL: {bias}\n📈 PRICE: {price}"
     )
 
 
-# ================= BACKGROUND TASK =================
+# =========================
+# BACKGROUND STREAM START
+# =========================
 async def post_init(app):
 
     lock = asyncio.Lock()
@@ -53,7 +54,9 @@ async def post_init(app):
     print("BOT RUNNING...")
 
 
-# ================= MAIN =================
+# =========================
+# MAIN
+# =========================
 def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
