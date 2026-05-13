@@ -4,9 +4,6 @@ from config import FINNHUB_API_KEY
 BASE_URL = "https://finnhub.io/api/v1"
 
 
-# =========================
-# REALTIME PRICE ONLY
-# =========================
 def get_realtime_price(symbol="OANDA:XAU_USD"):
 
     try:
@@ -18,11 +15,11 @@ def get_realtime_price(symbol="OANDA:XAU_USD"):
         price = data.get("c", None)
 
         if price is None or price == 0:
-            print("Finnhub invalid response:", data)
+            print("Finnhub invalid:", data)
             return None
 
         return float(price)
 
     except Exception as e:
-        print("Finnhub exception:", e)
+        print("Finnhub error:", e)
         return None
