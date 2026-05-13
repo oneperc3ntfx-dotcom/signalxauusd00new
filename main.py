@@ -11,18 +11,22 @@ scheduler = AsyncIOScheduler(timezone=utc)
 
 
 # =========================
-# ANALYSIS TIAP JAM 00
+# SIGNAL TIAP JAM 00
 # =========================
 scheduler.add_job(run_analysis, "cron", minute=0)
 
 
 # =========================
-# BACKGROUND PRICE UPDATE
+# PRICE LOOP (CACHE UPDATE)
 # =========================
 async def price_loop():
 
     while True:
-        update_price()
+        try:
+            update_price()
+        except Exception as e:
+            print("Price loop error:", e)
+
         await asyncio.sleep(5)
 
 
@@ -32,10 +36,8 @@ async def main():
 
     scheduler.start()
 
-    # start cache updater
     asyncio.create_task(price_loop())
 
-    # telegram polling (/harga)
     await dp.start_polling(bot)
 
 
