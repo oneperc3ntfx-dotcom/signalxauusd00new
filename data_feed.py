@@ -3,19 +3,25 @@ import asyncio
 import websockets
 from config import FINNHUB_TOKEN, PAIR
 
-last_price = None
+# =========================
+# SHARED STATE (FIX UTAMA)
+# =========================
+state = {
+    "price": None
+}
+
+
+def get_last_price():
+    return state["price"]
 
 
 async def stream_price(lock):
-
-    global last_price
 
     url = f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}"
 
     while True:
 
         try:
-
             async with websockets.connect(url) as ws:
 
                 await ws.send(json.dumps({
@@ -34,7 +40,7 @@ async def stream_price(lock):
                         for t in data["data"]:
 
                             async with lock:
-                                last_price = float(t["p"])
+                                state["price"] = float(t["p"])
 
         except Exception as e:
 
