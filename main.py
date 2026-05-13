@@ -1,19 +1,33 @@
-from apscheduler.schedulers.blocking import BlockingScheduler
+import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 from scheduler.jobs import run_analysis
+from services.telegram_service import bot, dp
+
 from pytz import utc
 
-scheduler = BlockingScheduler(timezone=utc)
 
-# jalan setiap jam menit 00
+scheduler = AsyncIOScheduler(timezone=utc)
+
+
+# tiap jam menit 00
 scheduler.add_job(
     run_analysis,
-    'cron',
+    "cron",
     minute=0
 )
 
-print("XAUUSD BOT RUNNING...")
 
-# test pertama
-run_analysis()
+async def main():
 
-scheduler.start()
+    print("XAUUSD BOT RUNNING...")
+
+    # start scheduler
+    scheduler.start()
+
+    # start telegram polling (UNTUK /harga)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
