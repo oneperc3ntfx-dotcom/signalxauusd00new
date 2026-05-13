@@ -14,7 +14,7 @@ def get_realtime_price():
 
         price = data.get("c")
 
-        if not price or price == 0:
+        if price is None or price == 0:
             print("Finnhub invalid:", data)
             return None
 
