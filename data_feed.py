@@ -13,9 +13,15 @@ async def stream_price(lock):
 
     url = f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}"
 
+    retry_delay = 2
+
     while True:
         try:
-            async with websockets.connect(url) as ws:
+            async with websockets.connect(
+                url,
+                ping_interval=20,
+                ping_timeout=20
+            ) as ws:
 
                 await ws.send(json.dumps({
                     "type": "subscribe",
@@ -23,6 +29,8 @@ async def stream_price(lock):
                 }))
 
                 print("Finnhub WS connected")
+
+                retry_delay = 2  # reset kalau sukses
 
                 async for msg in ws:
 
@@ -36,5 +44,10 @@ async def stream_price(lock):
                                 state["price"] = float(t["p"])
 
         except Exception as e:
-            print("WS reconnect:", e)
-            await asyncio.sleep(3)
+
+            print(f"WS reconnect: {e}")
+
+            await asyncio.sleep(retry_delay)
+
+            # exponential backoff
+            retry_delay = min(retry_delay * 2, 30)
