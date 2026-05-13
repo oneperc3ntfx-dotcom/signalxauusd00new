@@ -3,10 +3,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-
-FINNHUB_API_KEY = os.getenv("FINNHUB_API_KEY")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+FINNHUB_TOKEN = os.getenv("FINNHUB_TOKEN")
 TWELVEDATA_API_KEY = os.getenv("TWELVEDATA_API_KEY")
 
-SYMBOL = "XAU/USD"
+CHAT_ID = int(os.getenv("CHAT_ID"))
+
+THREAD_ID = int(os.getenv("THREAD_ID", "0"))
+AUTHORIZED_USER_ID = int(os.getenv("AUTHORIZED_USER_ID", "0"))
+
+# 🔥 FIX PENTING (SAMAKAN DENGAN BOT YANG BERHASIL)
+PAIR = "OANDA:XAU_USD"
