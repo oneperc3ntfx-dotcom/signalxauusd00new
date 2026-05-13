@@ -5,9 +5,6 @@ from config import TWELVEDATA_API_KEY
 BASE_URL = "https://api.twelvedata.com"
 
 
-# =========================
-# CANDLE HISTORY ONLY
-# =========================
 def get_candles(symbol="XAU/USD", interval="5min", limit=12):
 
     try:
@@ -27,7 +24,6 @@ def get_candles(symbol="XAU/USD", interval="5min", limit=12):
             return None
 
         df = pd.DataFrame(data["values"])
-
         df = df[["open", "high", "low", "close"]].astype(float)
 
         df = df.head(limit)
@@ -36,5 +32,5 @@ def get_candles(symbol="XAU/USD", interval="5min", limit=12):
         return df
 
     except Exception as e:
-        print("TwelveData exception:", e)
+        print("TwelveData error:", e)
         return None
